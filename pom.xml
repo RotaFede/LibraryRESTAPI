@@ -23,10 +23,21 @@
                             <name>webapp</name>
                         </program>
                     </programs>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>launch.Main</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
+                        <id>
+                            jar-with-dependencies
+                        </id>
                         <goals>
                             <goal>assemble</goal>
                         </goals>
