@@ -233,22 +233,21 @@ public class Library {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response restituisci(@FormParam("ID") int ID){
-        //final String controllo = "SELECT * FROM Prestiti WHERE ID=" + ID;
-        final String QUERY = "UPDATE Libri SET Quantita = (SELECT Quantita+1 FROM Libri WHERE ID = ?) WHERE ID = ?";
+        final String controllo = "SELECT * FROM Prestiti WHERE ID=" + ID;
+        final String QUERY = "UPDATE Libri SET Quantita = (SELECT Quantita+1 FROM Libri WHERE ID = ?) WHERE ID = ?";  
         final String[] data = Database.getData();
         try(
-
                 Connection conn = DriverManager.getConnection(data[0]);
-                PreparedStatement pstmt = conn.prepareStatement( QUERY )
+                PreparedStatement pstmt = conn.prepareStatement( QUERY ) //TODO: Aggiungere controllo su prestiti già restituiti
         ) {
-            /*Statement contr = conn.createStatement();
+            Statement contr = conn.createStatement();
             ResultSet rs = contr.executeQuery(controllo);
             if(!rs.next()) {
                 String obj = new Gson().toJson("Parameters must be valid");
                 return Response.serverError().entity(obj).build();
-            }*/
+            }
             pstmt.setInt(1,ID);
-            pstmt.setInt(2,ID);   //TODO: ID rimane a 0 nel FormParam
+            pstmt.setInt(2,ID);
             pstmt.executeUpdate();
         }catch (SQLException e){
             e.printStackTrace();
