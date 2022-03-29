@@ -37,6 +37,7 @@ public class Library {
                 book.setTitolo(results.getString("Titolo"));
                 book.setAutore(results.getString("Autore"));
                 book.setISBN(results.getString("ISBN"));
+                book.setQuantita(results.getInt("Quantita"));
                 books.add(book);
 
             }
@@ -55,12 +56,13 @@ public class Library {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response update(@FormParam("ISBN") String isbn,
                            @FormParam("Titolo")String titolo,
-                           @FormParam("Autore") String autore){
+                           @FormParam("Autore") String autore,
+                           @FormParam("Quantita") int quantita){
         if(checkParams(isbn, titolo, autore)) {
             String obj = new Gson().toJson("Parameters must be valid");
             return Response.serverError().entity(obj).build();
         }
-        final String QUERY = "UPDATE Libri SET Titolo = ?, Autore = ? WHERE ISBN = ?";
+        final String QUERY = "UPDATE Libri SET Titolo = ?, Autore = ?, Quantita = ? WHERE ISBN = ?";
         final String[] data = Database.getData();
         try(
 
@@ -69,7 +71,8 @@ public class Library {
         ) {
             pstmt.setString(1,titolo);
             pstmt.setString(2,autore);
-            pstmt.setString(3,isbn);
+            pstmt.setInt(3,quantita);
+            pstmt.setString(4,isbn);
             pstmt.execute();
         }catch (SQLException e){
             e.printStackTrace();
@@ -86,12 +89,13 @@ public class Library {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response create(@FormParam("ISBN") String isbn,
                            @FormParam("Titolo")String titolo,
-                           @FormParam("Autore") String autore){
+                           @FormParam("Autore") String autore,
+                           @FormParam("Quantita") int quantita){
         if(checkParams(isbn, titolo, autore)) {
             String obj = new Gson().toJson("Parameters must be valid");
             return Response.serverError().entity(obj).build();
         }
-        final String QUERY = "INSERT INTO Libri(ISBN,Titolo,Autore) VALUES(?,?,?)";
+        final String QUERY = "INSERT INTO Libri(ISBN,Titolo,Autore, Quantita) VALUES(?,?,?,?)";
         final String[] data = Database.getData();
         try(
 
@@ -101,6 +105,7 @@ public class Library {
             pstmt.setString(1,isbn);
             pstmt.setString(2,autore);
             pstmt.setString(3,titolo);
+            pstmt.setInt(4,quantita);
             pstmt.execute();
         }catch (SQLException e){
             e.printStackTrace();
@@ -180,7 +185,7 @@ public class Library {
                 pstmt_qta.execute();
             }
             else{
-                String libri = new Gson().toJson("Libro non più disponibile");
+                String libri = new Gson().toJson("Libro non disponibile al momento");
                 return Response.ok(libri,MediaType.APPLICATION_JSON).build();
             }
         }catch (SQLException e){

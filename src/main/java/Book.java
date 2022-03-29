@@ -1,5 +1,6 @@
 public class Book {
     private String Autore,Titolo,ISBN;
+    private int quantita;
 
     public String getAutore() {
         return Autore;
@@ -23,5 +24,13 @@ public class Book {
 
     public void setISBN(String ISBN) {
         this.ISBN = ISBN;
+    }
+
+    public int getQuantita(){
+        return quantita;
+    }
+
+    public void setQuantita(int quantita){
+        this.quantita = quantita;
     }
 }
