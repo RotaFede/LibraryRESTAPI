@@ -66,7 +66,7 @@ public class Library {
         final String[] data = Database.getData();
         try(
 
-                Connection conn = DriverManager.getConnection(data[0]);//, data[1], data[2]);
+                Connection conn = DriverManager.getConnection(data[0]);
                 PreparedStatement pstmt = conn.prepareStatement( QUERY )
         ) {
             pstmt.setString(1,titolo);
@@ -143,6 +143,37 @@ public class Library {
         return Response.ok(obj,MediaType.APPLICATION_JSON).build();
     }
 
+    @GET
+    @Path("/visualizzaPrestiti")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response visualizzaPrestiti(){
+        final String QUERY = "SELECT * FROM Prestiti";
+        final List<Prestito> books = new ArrayList<>();
+        final String[] data = Database.getData();
+        try(
+
+                Connection conn = DriverManager.getConnection(data[0]);
+                PreparedStatement pstmt = conn.prepareStatement( QUERY )
+        ) {
+            ResultSet results =  pstmt.executeQuery();
+            while (results.next()){
+                Prestito prestiti = new Prestito();
+                prestiti.setID(results.getInt("ID"));
+                prestiti.setLibro(results.getInt("libro"));
+                prestiti.setUtente(results.getString("utente"));
+                prestiti.setInizioPrestito(results.getDate("inizioPrestito"));
+                prestiti.setFinePrestito(results.getDate("finePrestito"));
+                books.add(prestiti);
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+            String obj = new Gson().toJson(error);
+            return Response.serverError().entity(obj).build();
+        }
+        String obj = new Gson().toJson(books);
+        return Response.status(200).entity(obj).build();
+    }
+
 
     @POST
     @Path("/prenota")
@@ -153,7 +184,7 @@ public class Library {
         if(checkParams(libro, utente)) {
             String obj = new Gson().toJson("Parameters must be valid");
             return Response.serverError().entity(obj).build();
-        }
+        } 
         final String select = "SELECT Quantita FROM Libri WHERE ID=" + libro;
         final String QUERY = "INSERT INTO Prestiti(libro, utente, inizioPrestito, finePrestito) VALUES(?,?,?,?)";
         final String Quantita = "UPDATE Libri SET Quantita=? WHERE ID=" + libro;
@@ -194,6 +225,37 @@ public class Library {
             return Response.serverError().entity(obj).build();
         }
         String obj = new Gson().toJson("Libro con ID:" + libro + " prenotato con successo");
+        return Response.ok(obj,MediaType.APPLICATION_JSON).build();
+    }
+
+    @PUT
+    @Path("/restituisci")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response restituisci(@FormParam("ID") int ID){
+        //final String controllo = "SELECT * FROM Prestiti WHERE ID=" + ID;
+        final String QUERY = "UPDATE Libri SET Quantita = (SELECT Quantita+1 FROM Libri WHERE ID = ?) WHERE ID = ?";
+        final String[] data = Database.getData();
+        try(
+
+                Connection conn = DriverManager.getConnection(data[0]);
+                PreparedStatement pstmt = conn.prepareStatement( QUERY )
+        ) {
+            /*Statement contr = conn.createStatement();
+            ResultSet rs = contr.executeQuery(controllo);
+            if(!rs.next()) {
+                String obj = new Gson().toJson("Parameters must be valid");
+                return Response.serverError().entity(obj).build();
+            }*/
+            pstmt.setInt(1,ID);
+            pstmt.setInt(2,ID);   //TODO: ID rimane a 0 nel FormParam
+            pstmt.executeUpdate();
+        }catch (SQLException e){
+            e.printStackTrace();
+            String obj = new Gson().toJson(error);
+            return Response.serverError().entity(obj).build();
+        }
+        String obj = new Gson().toJson("prenotazione " + ID + " restituita");
         return Response.ok(obj,MediaType.APPLICATION_JSON).build();
     }
 }
