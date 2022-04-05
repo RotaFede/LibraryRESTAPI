@@ -233,22 +233,29 @@ public class Library {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response restituisci(@FormParam("ID") int ID){
-        final String controllo = "SELECT * FROM Prestiti WHERE ID=" + ID;
+        final String controllo = "SELECT * FROM Prestiti WHERE ID=" + ID +" AND Restituito=0";
         final String QUERY = "UPDATE Libri SET Quantita = (SELECT Quantita+1 FROM Libri WHERE ID = ?) WHERE ID = ?";  
+        final String aggiornaPrestiti = "UPDATE Prestiti SET Restituito = 1 WHERE ID = ?";
         final String[] data = Database.getData();
+        int libro;
         try(
                 Connection conn = DriverManager.getConnection(data[0]);
-                PreparedStatement pstmt = conn.prepareStatement( QUERY ) //TODO: Aggiungere controllo su prestiti già restituiti
-        ) {
+                PreparedStatement pstmt = conn.prepareStatement( QUERY ); 
+                PreparedStatement pstmtPrestiti = conn.prepareStatement( aggiornaPrestiti ); 
+        ){
             Statement contr = conn.createStatement();
             ResultSet rs = contr.executeQuery(controllo);
             if(!rs.next()) {
                 String obj = new Gson().toJson("Parameters must be valid");
                 return Response.serverError().entity(obj).build();
             }
-            pstmt.setInt(1,ID);
-            pstmt.setInt(2,ID);
+            else
+                libro = rs.getInt("libro");
+            pstmt.setInt(1,libro);
+            pstmt.setInt(2,libro);
             pstmt.executeUpdate();
+            pstmtPrestiti.setInt(1, ID);
+            pstmtPrestiti.executeUpdate();
         }catch (SQLException e){
             e.printStackTrace();
             String obj = new Gson().toJson(error);
