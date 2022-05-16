@@ -16,7 +16,7 @@
                 text += "<td>" + dati[x].Autore + "</td>";
                 text += "<td>" + dati[x].ISBN + "</td>";
                 text += "<td>" + dati[x].quantita + "</td>";
-                text += "<td> <button type='button' onclick='elimina("+dati[x].ISBN+")'>Elimina</button></td>";
+                text += "<td> <button type='button' onclick='elimina("+dati[x].ISBN+")'>Elimina</button></td>"; //funziona
                 text += "</tr>";
               }
               text += "</table>"
@@ -31,19 +31,23 @@
             //https://reqbin.com/req/javascript/cvy4trgb/delete-request-example
           }
 
-function elimina(x){
-  const xhttp = new XMLHttpRequest();
-  let url = "api/book/delete/"
-  xhttp.open("DELETE", url+x, true);
-  xhttp.setRequestHeader("accept","application/json");
-  loadDoc();
-}
+          function elimina(x) {
+            var formBody = new URLSearchParams({'ISBN': x});
+            let res = fetch("/api/book/delete", {
+              method: "DELETE",
+              body: formBody,
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+              }
+            });
+          }
 </script>
+  <title>Elenco Libri</title>
     </head>
 <body>
 
-<h2>The XMLHttpRequest Object</h2>
-<button type="button" onclick="loadDoc()">Request data</button>
+<h1>Elenco dei libri</h1>
+<button type="button" onclick="loadDoc()">Mostra libri</button>
 
 <p id="demo"></p>
 
